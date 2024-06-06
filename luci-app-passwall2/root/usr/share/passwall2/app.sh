@@ -18,7 +18,7 @@ TMP_DNSMASQ_PATH=/tmp/dnsmasq.d/passwall2
 LOG_FILE=/tmp/log/$CONFIG.log
 APP_PATH=/usr/share/$CONFIG
 RULES_PATH=/usr/share/${CONFIG}/rules
-TUN_DNS_PORT=15353
+TUN_DNS_PORT=53
 TUN_DNS="127.0.0.1#${TUN_DNS_PORT}"
 DEFAULT_DNS=
 ENABLED_DEFAULT_ACL=0
@@ -315,10 +315,11 @@ run_xray() {
 		local _dns_port=$(echo ${_dns} | awk -F ':' '{print $2}')
 
 		DIRECT_DNS_UDP_SERVER=${_dns_address}
-		DIRECT_DNS_UDP_PORT=${_dns_port}
+		DIRECT_DNS_UDP_PORT=53 #${_dns_port}
 
 		[ "${write_ipset_direct}" = "1" ] && {
-			direct_dnsmasq_listen_port=$(get_new_port $(expr $dns_listen_port + 1) udp)
+			# direct_dnsmasq_listen_port=$(get_new_port $(expr $dns_listen_port + 1) udp)
+                        direct_dnsmasq_listen_port=53
 			local set_flag="${flag}"
 			local direct_ipset_conf=$TMP_PATH/dnsmasq_${flag}_direct.conf
 			[ -n "$(echo ${flag} | grep '^acl')" ] && {
@@ -330,14 +331,14 @@ run_xray() {
 			else
 				local direct_ipset="passwall2_${set_flag}_whitelist,passwall2_${set_flag}_whitelist6"
 			fi
-			run_ipset_dnsmasq listen_port=${direct_dnsmasq_listen_port} server_dns=${AUTO_DNS} ipset="${direct_ipset}" nftset="${direct_nftset}" config_file=${direct_ipset_conf}
+			# run_ipset_dnsmasq listen_port=${direct_dnsmasq_listen_port} server_dns=${AUTO_DNS} ipset="${direct_ipset}" nftset="${direct_nftset}" config_file=${direct_ipset_conf}
 			DIRECT_DNS_UDP_PORT=${direct_dnsmasq_listen_port}
 			DIRECT_DNS_UDP_SERVER="127.0.0.1"
 			[ -n "${direct_ipset}" ] && _extra_param="${_extra_param} -direct_ipset ${direct_ipset}"
 			[ -n "${direct_nftset}" ] && _extra_param="${_extra_param} -direct_nftset ${direct_nftset}"
 		}
 		_extra_param="${_extra_param} -direct_dns_udp_port ${DIRECT_DNS_UDP_PORT} -direct_dns_udp_server ${DIRECT_DNS_UDP_SERVER} -direct_dns_query_strategy UseIP"
-		
+
 		DNS_REMOTE_ARGS=""
 		case "$remote_dns_protocol" in
 			udp)
@@ -375,14 +376,15 @@ run_xray() {
 		if [ -z "${independent_dns}" ]; then
 			_extra_param="${_extra_param} ${DNS_REMOTE_ARGS}"
 		else
-			dns_remote_listen_port=$(get_new_port $(expr ${direct_dnsmasq_listen_port:-${dns_listen_port}} + 1) udp)
+			# dns_remote_listen_port=$(get_new_port $(expr ${direct_dnsmasq_listen_port:-${dns_listen_port}} + 1) udp)
+                        dns_remote_listen_port=53
 			V2RAY_DNS_REMOTE_CONFIG="${TMP_PATH}/${flag}_dns_remote.json"
 			V2RAY_DNS_REMOTE_LOG="${TMP_PATH}/${flag}_dns_remote.log"
 			V2RAY_DNS_REMOTE_LOG="/dev/null"
 			DNS_REMOTE_ARGS="${DNS_REMOTE_ARGS} -dns_out_tag remote -dns_listen_port ${dns_remote_listen_port} -remote_dns_outbound_socks_address 127.0.0.1 -remote_dns_outbound_socks_port ${socks_port}"
 			
 			lua $UTIL_XRAY gen_dns_config ${DNS_REMOTE_ARGS} > $V2RAY_DNS_REMOTE_CONFIG
-			ln_run "$(first_type $(config_t_get global_app ${type}_file) ${type})" ${type} $V2RAY_DNS_REMOTE_LOG run -c "$V2RAY_DNS_REMOTE_CONFIG"
+			# ln_run "$(first_type $(config_t_get global_app ${type}_file) ${type})" ${type} $V2RAY_DNS_REMOTE_LOG run -c "$V2RAY_DNS_REMOTE_CONFIG"
 			_extra_param="${_extra_param} -remote_dns_udp_port ${dns_remote_listen_port} -remote_dns_udp_server 127.0.0.1 -remote_dns_query_strategy ${remote_dns_query_strategy}"
 		fi
 	}
@@ -427,10 +429,11 @@ run_singbox() {
 		local _dns_port=$(echo ${_dns} | awk -F ':' '{print $2}')
 
 		DIRECT_DNS_UDP_SERVER=${_dns_address}
-		DIRECT_DNS_UDP_PORT=${_dns_port}
+		DIRECT_DNS_UDP_PORT=53 #${_dns_port}
 
 		[ "${write_ipset_direct}" = "1" ] && {
-			direct_dnsmasq_listen_port=$(get_new_port $(expr $dns_listen_port + 1) udp)
+			# direct_dnsmasq_listen_port=$(get_new_port $(expr $dns_listen_port + 1) udp)
+                        direct_dnsmasq_listen_port=53
 			local set_flag="${flag}"
 			local direct_ipset_conf=$TMP_PATH/dnsmasq_${flag}_direct.conf
 			[ -n "$(echo ${flag} | grep '^acl')" ] && {
@@ -442,7 +445,7 @@ run_singbox() {
 			else
 				local direct_ipset="passwall2_${set_flag}_whitelist,passwall2_${set_flag}_whitelist6"
 			fi
-			run_ipset_dnsmasq listen_port=${direct_dnsmasq_listen_port} server_dns=${AUTO_DNS} ipset="${direct_ipset}" nftset="${direct_nftset}" config_file=${direct_ipset_conf}
+			# run_ipset_dnsmasq listen_port=${direct_dnsmasq_listen_port} server_dns=${AUTO_DNS} ipset="${direct_ipset}" nftset="${direct_nftset}" config_file=${direct_ipset_conf}
 			DIRECT_DNS_UDP_PORT=${direct_dnsmasq_listen_port}
 			DIRECT_DNS_UDP_SERVER="127.0.0.1"
 			[ -n "${direct_ipset}" ] && _extra_param="${_extra_param} -direct_ipset ${direct_ipset}"
