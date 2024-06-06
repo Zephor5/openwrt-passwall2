@@ -1206,6 +1206,7 @@ function gen_config(var)
 				port = tonumber(direct_dns_udp_port) or 53,
 				queryStrategy = (direct_dns_query_strategy and direct_dns_query_strategy ~= "") and direct_dns_query_strategy or "UseIP",
 			}
+			--]]
 			table.insert(routing.rules, 1, {
 				type = "field",
 				ip = {
@@ -1215,11 +1216,13 @@ function gen_config(var)
 				network = "udp",
 				outboundTag = "direct"
 			})
+			--]]
 
 			table.insert(dns.servers, _direct_dns)
 		end
 	
 		if dns_listen_port then
+			--[[
 			table.insert(inbounds, {
 				listen = "127.0.0.1",
 				port = tonumber(dns_listen_port),
@@ -1230,6 +1233,7 @@ function gen_config(var)
 					network = "tcp,udp"
 				}
 			})
+			--]]
 			local direct_type_dns = {
 				settings = {
 					address = direct_dns_udp_server,
